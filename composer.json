@@ -1,0 +1,19 @@
+{
+    "name": "nturanjanin/ddd",
+    "description": "Simple ca-ddd workshop",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/",
+            "Framework\\": "framework/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Nemanja Turanjanin",
+            "email": "nturanjanin@bettercollective.com"
+        }
+    ],
+    "require": {
+        "symfony/http-foundation": "^7.0"
+    }
+}
