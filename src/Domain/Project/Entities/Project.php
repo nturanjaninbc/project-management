@@ -3,84 +3,87 @@
 namespace App\Domain\Project\Entities;
 
 use App\Domain\Abstraction\Entity;
+use App\Domain\Employee\Entities\Employee;
+use App\Domain\Employee\Exceptions\EmployeeNotFoundException;
 use App\Domain\Project\Entities\Collections\ProjectMembers;
 use App\Domain\Project\Entities\Collections\Releases;
+use App\Domain\Project\Enums\ProjectRoleEnum;
 use App\Domain\Project\Enums\ProjectStatusEnum;
 
 class Project extends Entity
 {
-    private string $name;
-    private string $description;
-    private int $currentVersion;
-    private ProjectMembers $members;
-    private ProjectStatusEnum $projectStatusEnum;
-    private Releases $releases;
-
-    public function __construct()
-    {
+    private function __construct(
+        private string $name,
+        private string $description,
+        private int $currentVersion,
+        private ProjectStatusEnum $projectStatusEnum,
+        private ProjectMembers $members,
+        private Releases $releases,
+    ) {
         parent::__construct();
-
-        $this->members = new ProjectMembers();
-        $this->realeases = new Releases();
     }
 
-    public function getName(): string
+    public static function create(string $name, $description): static
     {
-        return $this->name;
+        return new static(
+            $name,
+            $description,
+            0,
+            ProjectStatusEnum::PLANNING,
+            new ProjectMembers(),
+            new Releases()
+        );
     }
 
-    public function setName(string $name): void
+    public function assignMember(Employee $employee, ProjectRoleEnum $role): void
     {
-        $this->name = $name;
+        $this->members->add(new ProjectMember($this, $employee, $role));
     }
 
-    public function getMembers(): ProjectMembers
+    /**
+     * @throws \Exception
+     */
+    public function createNewRelease(): Release
     {
-        return $this->members;
+        if ($this->releases->hasActiveRelease()) {
+            throw new \Exception('What are you doing? You already have a release in progress');
+        }
+
+        $release = Release::create($this->currentVersion++);
+
+        $this->releases->add($release);
+
+        return $release;
     }
 
-    public function setMembers(ProjectMembers $members): void
+    public function addFeature(Employee $employee, string $description): Feature
     {
-        $this->members = $members;
+        if (!$this->releases->hasActiveRelease()) {
+            throw new \Exception('In order to proceed with adding feature, please create active release');
+        }
+
+        $feature = new Feature($employee, $description);
+
+        $this->releases->getActiveRelease()->addFeature($feature);
+
+        return $feature;
     }
 
-    public function getDescription(): string
+    public function transferOwnership(int $newOwnerId): void
     {
-        return $this->description;
-    }
+        $newOwner = $this->members->findByEmployee($newOwnerId);
 
-    public function setDescription(string $description): void
-    {
-        $this->description = $description;
-    }
+        if (null === $newOwner) {
+            throw new EmployeeNotFoundException($newOwnerId);
+        }
 
-    public function getProjectStatusEnum(): ProjectStatusEnum
-    {
-        return $this->projectStatusEnum;
-    }
+        $owner = $this->members->findOwner();
 
-    public function setProjectStatusEnum(ProjectStatusEnum $projectStatusEnum): void
-    {
-        $this->projectStatusEnum = $projectStatusEnum;
-    }
+        if ($owner->employee->getId() === $newOwnerId) {
+            throw new \Exception('You cannot select new owner');
+        }
 
-    public function getCurrentVersion(): int
-    {
-        return $this->currentVersion;
-    }
-
-    public function setCurrentVersion(int $currentVersion): void
-    {
-        $this->currentVersion = $currentVersion;
-    }
-
-    public function getReleases(): Releases
-    {
-        return $this->releases;
-    }
-
-    public function setReleases(Releases $releases): void
-    {
-        $this->releases = $releases;
+        $owner->changeRole(ProjectRoleEnum::DEVELOPER);
+        $newOwner->changeRole(ProjectRoleEnum::PRODUCT_OWNER);
     }
 }

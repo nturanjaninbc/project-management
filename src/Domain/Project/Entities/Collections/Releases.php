@@ -2,7 +2,7 @@
 
 namespace App\Domain\Project\Entities\Collections;
 
-use App\Domain\Project\Entity\Release;
+use App\Domain\Project\Entities\Release;
 use App\Domain\Project\Enums\ReleaseStatusEnum;
 
 class Releases
@@ -23,7 +23,7 @@ class Releases
     {
         return count(array_filter(
             $this->releases,
-            fn(Release $release) => $release->getStatus() === ReleaseStatusEnum::IN_PROGRESS
+            fn(Release $release) => $release->status() === ReleaseStatusEnum::IN_PROGRESS
         )) > 0;
     }
 
@@ -31,7 +31,7 @@ class Releases
     {
         return array_filter(
             $this->releases,
-            fn(Release $release) => $release->getStatus() === ReleaseStatusEnum::IN_PROGRESS
+            fn(Release $release) => $release->status() === ReleaseStatusEnum::IN_PROGRESS
         )[0];
     }
 }

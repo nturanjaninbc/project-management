@@ -3,7 +3,6 @@
 namespace App\Application\Employee\Commands;
 
 use App\Domain\Employee\Exceptions\EmployeeNotFoundException;
-use App\Domain\Project\Entities\ProjectMember;
 use App\Domain\Project\Enums\ProjectRoleEnum;
 use App\Domain\Project\Exceptions\ProjectNotFoundException;
 use App\Domain\Project\ProjectRepository;
@@ -17,6 +16,10 @@ class AssignProject
     ) {
     }
 
+    /**
+     * @throws EmployeeNotFoundException
+     * @throws ProjectNotFoundException
+     */
     public function handle(int $employeeId, int $projectId, ProjectRoleEnum $role): void
     {
         $employee = $this->employeeRepository->find($employeeId);
@@ -31,14 +34,7 @@ class AssignProject
             throw new ProjectNotFoundException($projectId);
         }
 
-        $projectMembers = $project->getMembers();
-
-        $projectMember = new ProjectMember();
-        $projectMember->setProject($project);
-        $projectMember->setRole($role);
-        $projectMember->setEmployee($employee);
-
-        $projectMembers->add($projectMember);
+        $project->assignMember($employee, $role);
 
         $this->projectRepository->save($project);
     }

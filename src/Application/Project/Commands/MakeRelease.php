@@ -2,8 +2,7 @@
 
 namespace App\Application\Project\Commands;
 
-use App\Domain\Project\Entity\Release;
-use App\Domain\Project\Enums\ReleaseStatusEnum;
+use App\Domain\Project\Entities\Release;
 use App\Domain\Project\Exceptions\ProjectNotFoundException;
 use App\Domain\Project\ProjectRepository;
 
@@ -21,16 +20,7 @@ class MakeRelease
             throw new ProjectNotFoundException($projectId);
         }
 
-        if ($project->getReleases()->hasActiveRelease()) {
-            throw new \Exception('What are you doing? You already have a release in progress');
-        }
-
-        $release = new Release();
-        $release->setStatus(ReleaseStatusEnum::IN_PROGRESS);
-        $release->setCreatedAt(new \DateTimeImmutable());
-        $release->setVersion($project->getCurrentVersion() + 1);
-
-        $project->getReleases()->add($release);
+        $release = $project->createNewRelease();
 
         $this->projectRepository->save($project);
 
