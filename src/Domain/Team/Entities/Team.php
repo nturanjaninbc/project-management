@@ -3,37 +3,46 @@
 namespace App\Domain\Team\Entities;
 
 use App\Domain\Abstraction\Entity;
+use App\Domain\Employee\Entities\Employee;
 use App\Domain\Team\Entities\Collections\TeamMembers;
+use App\Domain\Team\Enums\TeamRoleEnum;
 
 class Team extends Entity
 {
-    private string $name;
-    private TeamMembers $members;
-
-    public function __construct()
+    private function __construct(private readonly string $name, private readonly TeamMembers $members)
     {
         parent::__construct();
-
-        $this->members = new TeamMembers();
     }
 
-    public function getName(): string
+    public static function create(string $name): static
     {
-        return $this->name;
+        return static(
+            $name,
+            new TeamMembers()
+        );
     }
 
-    public function setName(string $name): void
+    public function hire(Employee $employee, TeamRoleEnum $role): void
     {
-        $this->name = $name;
+        if ($this->members->find($employee->getId())) {
+            throw new \Exception('Employee already hired in this team');
+        }
+
+        $this->members->add(new TeamMember($this, $employee, $role));
     }
 
-    public function getMembers(): TeamMembers
+    public function promote(int $employeeId, TeamRoleEnum $role): void
     {
-        return $this->members;
-    }
+        $teamMember = $this->members->find($employeeId);
 
-    public function setMembers(TeamMembers $members): void
-    {
-        $this->members = $members;
+        if (null === $teamMember) {
+            throw new \Exception('This employee does not belong to this team');
+        }
+
+        if ($teamMember->role() === $role) {
+            throw new \Exception("Team member is already $role->value");
+        }
+
+        $teamMember->promote($role);
     }
 }

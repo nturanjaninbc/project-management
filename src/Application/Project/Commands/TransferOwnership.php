@@ -2,11 +2,8 @@
 
 namespace App\Application\Project\Commands;
 
-use App\Domain\Employee\Exceptions\EmployeeNotFoundException;
-use App\Domain\Project\Enums\ProjectRoleEnum;
 use App\Domain\Project\Exceptions\ProjectNotFoundException;
 use App\Domain\Project\ProjectRepository;
-use App\Domain\Employee\EmployeeRepository;
 
 class TransferOwnership
 {
@@ -23,20 +20,7 @@ class TransferOwnership
             throw new ProjectNotFoundException($projectId);
         }
 
-        $newOwner = $project->getMembers()->findByEmployee($newLeaderId);
-
-        if (null === $newOwner) {
-            throw new EmployeeNotFoundException($employeeId);
-        }
-
-        $owner = $project->getMembers()->findLeader();
-
-        if (!($owner === null || $owner->getEmployee()->getId() === $newOwner->getId())) {
-            throw new \Exception('You cannot select new owner');
-        }
-
-        $owner->setRole(ProjectRoleEnum::DEVELOPER);
-        $newOwner->setRole(ProjectRoleEnum::PRODUCT_OWNER);
+        $project->transferOwnership($newLeaderId);
 
         $this->projectRepository->save($project);
     }

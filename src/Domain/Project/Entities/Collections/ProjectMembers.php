@@ -26,7 +26,7 @@ class ProjectMembers
         unset($this->members[$member->getId()]);
     }
 
-    public function findLeader(): ProjectMember | null
+    public function findOwner(): ProjectMember | null
     {
         $projectOwners = array_filter(
             $this->members,
@@ -44,7 +44,7 @@ class ProjectMembers
     {
         return array_filter(
             $this->members,
-            fn(ProjectMember $member) => $member->getEmployee()->getId() === $employeeId
+            fn(ProjectMember $member) => $member->employee->getId() === $employeeId
         )[0] ?? null;
     }
 }

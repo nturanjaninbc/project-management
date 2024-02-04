@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Application\Shipments\Commands;
+namespace App\Application\Team\Commands;
 
 use App\Domain\Team\Entities\Team;
 use App\Domain\Team\TeamRepository;
@@ -11,11 +11,8 @@ class FormTeam
     {
     }
 
-    public function handle(string $name)
+    public function handle(string $name): void
     {
-        $team = new Team();
-        $team->setName($name);
-
-        $this->teamRepository->save($team);
+        $this->teamRepository->save(Team::create($name));
     }
 }

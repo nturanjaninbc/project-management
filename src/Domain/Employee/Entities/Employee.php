@@ -4,51 +4,60 @@ namespace App\Domain\Employee\Entities;
 
 use App\Domain\Abstraction\Entity;
 use App\Domain\Employee\Enums\EmployeeStatusEnum;
+use App\Domain\Employee\VO\Salary;
 
+/**
+ * Methods here are not used anywhere, it's a solid example of future expansion of the domain.
+ */
 class Employee extends Entity
 {
-    private string $name;
-    private string $activePosition;
-    private int $salary;
-    private EmployeeStatusEnum $status;
-
-    public function getName(): string
-    {
-        return $this->name;
+    private function __construct(
+        private string $name,
+        private ?string $activePosition,
+        private Salary $salary,
+        private EmployeeStatusEnum $status
+    ) {
+        parent::__construct();
     }
 
-    public function setName(string $name): void
-    {
-        $this->name = $name;
+    /**
+     * @throws \Exception
+     */
+    public static function create(
+        string $name,
+        string $activePosition,
+        int $salary
+    ): static {
+        return new static(
+            $name,
+            $activePosition,
+            new Salary($salary),
+            EmployeeStatusEnum::ACTIVE
+        );
     }
 
-    public function getActivePosition(): string
+    public function promote(string $newPosition, int $newSalary): void
     {
-        return $this->activePosition;
+        if (!$this->salary->greaterThan($newSalary)) {
+            throw new \Exception('Srpski gazda, is that you?');
+        }
+
+        $this->activePosition = $newPosition;
+        $this->salary = new Salary($newSalary);
     }
 
-    public function setActivePosition(string $activePosition): void
+    public function fire(): void
     {
-        $this->activePosition = $activePosition;
+        if ($this->status !== EmployeeStatusEnum::INACTIVE) {
+            throw new \Exception('We have already did this!');
+        }
+
+        $this->activePosition = null;
+        $this->status = EmployeeStatusEnum::INACTIVE;
     }
 
-    public function getSalary(): int
+    public function isActive(): bool
     {
-        return $this->salary;
-    }
-
-    public function setSalary(int $salary): void
-    {
-        $this->salary = $salary;
-    }
-
-    public function getStatus(): EmployeeStatusEnum
-    {
-        return $this->status;
-    }
-
-    public function setStatus(EmployeeStatusEnum $status): void
-    {
-        $this->status = $status;
+        return $this->status === EmployeeStatusEnum::ACTIVE;
     }
 }

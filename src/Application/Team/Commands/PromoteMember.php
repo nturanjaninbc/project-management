@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Application\Shipments\Commands;
+namespace App\Application\Team\Commands;
 
 use App\Domain\Team\Enums\TeamRoleEnum;
 use App\Domain\Team\Exceptions\TeamNotFoundException;
@@ -20,17 +20,7 @@ class PromoteMember
             throw new TeamNotFoundException($teamId);
         }
 
-        $teamMember = $team->getMembers()->find($employeeId);
-
-        if (null === $teamMember) {
-            throw new \Exception('This employee does not belong to this team');
-        }
-
-        if ($teamMember->getRole() === $role) {
-            throw new \Exception("Team member is already $role->value");
-        }
-
-        $teamMember->setRole($role);
+        $team->promote($employeeId, $role);
 
         $this->teamRepository->save($team);
     }

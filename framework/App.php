@@ -2,8 +2,7 @@
 
 namespace Framework;
 
-use App\Application\Shipments\Commands\ShipmentCommand;
-use Framework\DependencyContainer;
+use App\Application\Employee\Commands\AssignProject;
 use Framework\DTO\RouteAction;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,8 +44,7 @@ readonly class App
     {
         $route = $request->getPathInfo();
         return match ($route) {
-            '/project/:projectId/employees/:employeeId/assign' => new RouteAction(ShipmentCommand::class, 'try'),
-            '/project/:projectId/employees/:employeeId/assign' => new RouteAction(ShipmentCommand::class, 'try'),
+            '/employees/:id/assign-project' => new RouteAction(AssignProject::class, 'handle'),
         };
     }
 }

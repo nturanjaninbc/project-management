@@ -30,20 +30,7 @@ class AddFeature
             throw new EmployeeNotFoundException($employeeId);
         }
 
-        $releases = $project->getReleases();
-
-        if (!$releases->hasActiveRelease()) {
-            throw new \Exception('In order to proceed with adding feature, please create active release');
-        }
-
-        $feature = new Feature();
-        $feature->setEmployee($employee);
-        $feature->setDescription($description);
-
-        $activeRelease = $releases->getActiveRelease();
-        $activeRelease->getFeatures()->add($feature);
-
-        $this->projectRepository->save($project);
+        $feature = $project->addFeature($employee, $description);
 
         return $feature;
     }
