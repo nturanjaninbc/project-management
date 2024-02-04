@@ -11,7 +11,7 @@ class Salary
         private readonly CurrencyEnum $currency = CurrencyEnum::EUR
     ) {
         if ($this->value <= 0) {
-            throw new \Exception('to low');
+            throw new \Exception('top low');
         }
     }
 
